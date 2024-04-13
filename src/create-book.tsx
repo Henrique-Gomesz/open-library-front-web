@@ -3,6 +3,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import "./App.css";
 
 export const CreateLivro = () => {
+  
   const [livroData, setLivroData] = useState<{
     livro_nome: string;
     lanca_ano: string;
@@ -13,7 +14,7 @@ export const CreateLivro = () => {
   }>({
     livro_nome: "",
     lanca_ano: "",
-    livro_categoria: 0,
+    livro_categoria: 1,
     livro_autores: [],
     livro_paginas: 0,
     livro_editora: "",
@@ -37,14 +38,47 @@ export const CreateLivro = () => {
     const { value } = e.target;
     setLivroData((prevData) => ({
       ...prevData,
-      livro_autores: value.split(","),
+      livro_autores: value.split(", ").map(author => author.trim()),
+    }));
+  };
+
+  const categoriesOptions = [
+    "Ficção Científica",
+    "Fantasia",
+    "Romance",
+    "Mistério",
+    "Aventura",
+    "História",
+    "Biografia",
+    "Autoajuda",
+    "Terror",
+    "Poesia",
+    "Drama",
+    "Humor",
+    "Ação",
+    "Suspense",
+    "Infantil",
+    "Fábula",
+    "Didático",
+    "Religião",
+    "Filosofia",
+    "Policial",
+  ];
+
+  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const selectedCategoryIndex: number = parseInt(e.target.value);
+    console.log(selectedCategoryIndex)
+    setLivroData((prevData) => ({
+      ...prevData,
+      livro_categoria: selectedCategoryIndex,
     }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log(livroData)
     try {
-      await axios.post("http://192.168.15.61:8000/livro", livroData);
+      const usuarios = await axios.post("http://172.17.22.87:8000/livro", livroData);
       console.log("Livro criado com sucesso");
       setLivroData({
         livro_nome: "",
@@ -54,6 +88,8 @@ export const CreateLivro = () => {
         livro_paginas: 0,
         livro_editora: "",
       });
+      console.log(usuarios.data)
+      alert(JSON.stringify(usuarios.data.usuarios))
     } catch (error) {
       console.error("Erro ao criar livro:", error);
     }
@@ -83,16 +119,11 @@ export const CreateLivro = () => {
           />
         </div>
         <div>
-          <label>Categoria:</label>
-          <select
-            name="livro_categoria"
-            value={livroData.livro_categoria}
-            onChange={handleChange}
-            required
-          >
-            <option value={1}>Categoria 1</option>
-            <option value={2}>Categoria 2</option>
-            {/* Adicione mais opções conforme necessário */}
+          <label>Categorias:</label>
+          <select name="categorias" onChange={handleCategoryChange} value={livroData.livro_categoria}>
+            {categoriesOptions.map((category, index) => (
+              <option key={index} value={index + 1}>{category}</option>
+            ))}
           </select>
         </div>
         <div>
@@ -100,7 +131,7 @@ export const CreateLivro = () => {
           <input
             type="text"
             name="livro_autores"
-            value={livroData.livro_autores.join(",")}
+            value={livroData.livro_autores.join(", ")}
             onChange={handleAutoresChange}
             required
           />
